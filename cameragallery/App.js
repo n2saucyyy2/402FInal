@@ -1,6 +1,6 @@
 // import the necessary components
 import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, Text, View, TouchableOpacity,Platform, PermissionsAndroid } from 'react-native';
+import { Image, StyleSheet, Text, View, TouchableOpacity,Platform, PermissionsAndroid, TextInput} from 'react-native';
 import { Camera } from 'expo-camera';
 import PreviewList from './PreviewList';
 import ListGrid from './ListGrid';
@@ -18,7 +18,8 @@ export default function CameraApp() {
   const [photolist, setPhotoList] = useState(aplist);
   const [viewmode, setVMode] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const [currentNote, setCurrentNote] = useState('');
+ 
   const SCREEN_WIDTH = useWindowDimensions().width;
   const SCREEN_HEIGHT = useWindowDimensions().height;
   
@@ -48,9 +49,6 @@ export default function CameraApp() {
     } else {
       setCurrentIndex(currentIndex);
     }
-    if (newPhotoList.length === 0) {
-    setVMode(false); // Switch to grid mode
-  }
   };
 
   // if do not have permission to access camera show notice
@@ -101,14 +99,13 @@ export default function CameraApp() {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {switchMode();  }}>
-            <Text > Switch </Text>
+            <Text > Switch-UI </Text>
           </TouchableOpacity>
         </View>
         <ListGrid photolist={photolist} source={{uri: aphoto}} />
      </View> }
  
   else{
-
     camui = <View style={mainstyle}>
          <Camera 
            ref={ref => { 
@@ -136,18 +133,22 @@ export default function CameraApp() {
           <TouchableOpacity
             style={styles.button}
             onPress={() => {switchMode();  }}>
-            <Text  style={styles.bstyle}> Switch </Text>
+            <Text  style={styles.bstyle}> Switch-UI </Text>
           </TouchableOpacity>
         </View>
+        <TextInput
+        style = {styles.textInput}
+        placeholder = "Enter a note for video/picture."
+        onChangeText = {setCurrentNote}
+        placeholderTextColor = "#888"
+        />
         <PreviewList
         photolist={photolist}
         source={photolist.length > 0 ? { uri: photolist[currentIndex].uri } : { uri: aphoto }}
         deletePhoto={deletePhoto}
         setPhotoList={setPhotoList} 
         currentIndex={currentIndex}
-        setCurrentIndex={setCurrentIndex}
-        viewmode={viewmode} 
-        setVMode={setVMode} />
+        setCurrentIndex={setCurrentIndex}/>
      </View>
   }
 
@@ -170,12 +171,12 @@ export default function CameraApp() {
         console.log("Camera Available");
         const options = { quality: 0.5, base64: true }
         let photo = await this.SnapCamera.takePictureAsync(options);
-        photo.name="a photo" + photolist.length;
-        setPhoto(photo.uri);
-        const splist = [photo, ...photolist];
+        const photoWithNote = { uri: photo.uri, note: currentNote, name: "Photo " + photolist.length };
+        const splist = [photoWithNote, ...photolist];
         setPhotoList(splist);
+        setCurrentNote('');
  
-        console.log(photo.uri);
+        //console.log(photo.uri);
         console.log("Got the Photo");
      }
   };
@@ -230,5 +231,16 @@ const styles = StyleSheet.create({
       paddingTop: 0,
       margin: 5
   },
+  textInput: {
+  height: 40,
+  borderColor: 'gray',
+  borderWidth: 1,
+  marginTop: 10,
+  marginBottom: 10,
+  paddingHorizontal: 10,
+  color: 'black',
+  width: '90%',  // Adjust width as necessary
+  alignSelf: 'center'
+}
    
 });
