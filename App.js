@@ -1,14 +1,7 @@
 import React, { useState } from "react"; 
-import { 
-	View, 
-	Text, 
-	TextInput, 
-	Button, 
-	ScrollView, 
-	TouchableOpacity, 
-	Modal, 
-	StyleSheet, 
-} from "react-native"; 
+import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Modal, StyleSheet, Image } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
+
 
 const App = () => { 
 	
@@ -28,32 +21,52 @@ const App = () => {
 	// Modal visibility state 
 	const [modalVisible, setModalVisible] = useState(false); 
 
-	// Function to handle saving a note 
-	const handleSaveNote = () => { 
-		if (selectedNote) { 
+  //store the image uri
+  const [imageUri, setImageUri] = useState(null);
 
-			// If a note is selected, update it 
-			const updatedNotes = notes.map((note) => 
-				note.id === selectedNote.id 
-					? { ...note, title, content } 
-					: note 
-			); 
-			setNotes(updatedNotes); 
-			setSelectedNote(null); 
-		} else { 
-			
-			// If no note is selected, add a new note 
-			const newNote = { 
-				id: Date.now(), 
-				title, 
-				content, 
-			}; 
-			setNotes([...notes, newNote]); 
-		} 
-		setTitle(""); 
-		setContent(""); 
-		setModalVisible(false); 
-	}; 
+  //function to open image picker
+   const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+    });
+
+    console.log('Image Picker Result:', result);  // Log the result from image picker
+
+    if (!result.cancelled && result.assets && result.assets.length > 0) {
+        setImageUri(result.assets[0].uri);
+        console.log('Image URI set:', result.assets[0].uri);  // Confirm image URI is set
+    }
+};
+
+const handleSaveNote = () => {
+    if (selectedNote) {
+        // If a note is selected, update it
+        const updatedNotes = notes.map((note) =>
+            note.id === selectedNote.id
+                ? { ...note, title, content, imageUri } // Include imageUri here to ensure it's updated
+                : note
+        );
+        setNotes(updatedNotes);
+        setSelectedNote(null);
+    } else {
+        // If no note is selected, add a new note
+        const newNote = {
+            id: Date.now(), // Ensuring each note has a unique ID
+            title,
+            content,
+            imageUri  // Make sure to include imageUri when creating a new note
+        };
+        setNotes([...notes, newNote]);
+    }
+    setTitle(""); 
+    setContent("");
+    setImageUri(null); // Reset the image URI after saving
+    setModalVisible(false);
+};
+
 
 	// Function to handle editing a note 
 	const handleEditNote = (note) => { 
@@ -73,94 +86,77 @@ const App = () => {
 		setModalVisible(false); 
 	}; 
 
-	return ( 
-		<View style={styles.container}> 
-			{/* Title */} 
-			<Text style={styles.title}>My Notes</Text> 
-
-			{/* List of notes */} 
-			<ScrollView style={styles.noteList}> 
-				{notes.map((note) => ( 
-					<TouchableOpacity 
-						key={note.id} 
-						onPress={() => handleEditNote(note)} 
-					> 
-						<Text style={styles.noteTitle}> 
-							{note.title} 
-						</Text> 
-					</TouchableOpacity> 
-				))} 
-			</ScrollView> 
-
-			{/* Add Note button */} 
-			<TouchableOpacity 
-				style={styles.addButton} 
-				onPress={() => { 
-					setTitle(""); 
-					setContent(""); 
-					setModalVisible(true); 
-				}} 
-			> 
-				<Text style={styles.addButtonText}> 
-					Add Note 
-				</Text> 
-			</TouchableOpacity> 
-
-			{/* Modal for creating/editing notes */} 
-			<Modal 
-				visible={modalVisible} 
-				animationType="slide"
-				transparent={false} 
-			> 
-				<View style={styles.modalContainer}> 
-					{/* Note title input */} 
-					<TextInput 
-						style={styles.input} 
-						placeholder="Enter note title"
-						value={title} 
-						onChangeText={setTitle} 
-					/> 
-
-					{/* Note content input */} 
-					<TextInput 
-						style={styles.contentInput} 
-						multiline 
-						placeholder="Enter note content"
-						value={content} 
-						onChangeText={setContent} 
-					/> 
-
-					{/* Buttons for saving, canceling, and deleting */} 
-					<View style={styles.buttonContainer}> 
-						<Button 
-							title="Save"
-							onPress={handleSaveNote} 
-							color="#007BFF"
-						/> 
-						<Button 
-							title="Cancel"
-							onPress={() => 
-								setModalVisible(false) 
-							} 
-							color="#FF3B30"
-						/> 
-						{selectedNote && ( 
-							<Button 
-								title="Delete"
-								onPress={() => 
-									handleDeleteNote( 
-										selectedNote 
-									) 
-								} 
-								color="#FF9500"
-							/> 
-						)} 
-					</View> 
-				</View> 
-			</Modal> 
-		</View> 
-	); 
-}; 
+return (
+    <View style={styles.container}>
+        <Text style={styles.title}>My Notes</Text>
+        <ScrollView style={styles.noteList}>
+            {notes.map((note) => (
+    <TouchableOpacity key={note.id} onPress={() => handleEditNote(note)}>
+        <Text style={styles.noteTitle}>{note.title}</Text>
+        {note.imageUri && <Image source={{ uri: note.imageUri }} style={{ width: 100, height: 100 }} />}
+    </TouchableOpacity>
+        ))}
+        </ScrollView>
+        <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+                setTitle("");
+                setContent("");
+                setImageUri(null);
+                setModalVisible(true);
+            }}
+        >
+            <Text style={styles.addButtonText}>Add Note</Text>
+        </TouchableOpacity>
+        <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent={false}
+        >
+            <View style={styles.modalContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter note title"
+                    value={title}
+                    onChangeText={setTitle}
+                />
+                <TextInput
+                    style={styles.contentInput}
+                    multiline
+                    numberOfLines={4}
+                    placeholder="Enter note content"
+                    value={content}
+                    onChangeText={setContent}
+                />
+                {imageUri && (
+                    <View>
+                        <Image source={{ uri: imageUri }} style={{ width: 100, height: 100 }} />
+                        <Button title="Remove Image" onPress={() => setImageUri(null)} />
+                    </View>
+                )}
+                <Button title="Pick Image" onPress={pickImage} />
+                <View style={styles.buttonContainer}>
+                    <Button
+                        title="Save"
+                        onPress={handleSaveNote}
+                        color="#007BFF"
+                    />
+                    <Button
+                        title="Cancel"
+                        onPress={() => setModalVisible(false)}
+                        color="#FF3B30"
+                    />
+                    {selectedNote && (
+                        <Button
+                            title="Delete"
+                            onPress={() => handleDeleteNote(selectedNote)}
+                            color="#FF9500"
+                        />
+                    )}
+                </View>
+            </View>
+        </Modal>
+    </View>)}; 
 
 const styles = StyleSheet.create({ 
 	container: { 
