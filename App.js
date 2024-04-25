@@ -1,3 +1,4 @@
+// export default App;
 import React, { useState } from "react"; 
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Modal, StyleSheet, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
@@ -63,6 +64,7 @@ const handleSaveNote = () => {
     }
     setTitle(""); 
     setContent("");
+    setImageUri(null);
     setModalVisible(false);
 };
 
@@ -73,6 +75,7 @@ const handleSaveNote = () => {
 		setTitle(note.title); 
 		setContent(note.content); 
 		setModalVisible(true); 
+    setImageUri(note.imageUri);
 	}; 
 
 	// Function to handle deleting a note 
