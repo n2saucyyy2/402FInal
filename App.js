@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Modal, StyleSheet, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 
-
+//need to fix bug where image isn't saved when editing note
 const App = () => { 
 	
 	// State variables 
