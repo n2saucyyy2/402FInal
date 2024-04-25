@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Modal, StyleSheet, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 
-//need to fix bug where image isn't saved when editing note
+//search function for note title or tag. video functionality, tags last.
 const App = () => { 
 	
 	// State variables 
@@ -90,7 +90,7 @@ const handleSaveNote = () => {
 
 return (
     <View style={styles.container}>
-        <Text style={styles.title}>My Notes</Text>
+        <Text style={styles.title}>My Workout Notes</Text>
         <ScrollView style={styles.noteList}>
             {notes.map((note) => (
     <TouchableOpacity key={note.id} onPress={() => handleEditNote(note)}>
@@ -108,7 +108,7 @@ return (
                 setModalVisible(true);
             }}
         >
-            <Text style={styles.addButtonText}>Add Note</Text>
+            <Text style={styles.addButtonText}>Add Workout</Text>
         </TouchableOpacity>
         <Modal
             visible={modalVisible}
