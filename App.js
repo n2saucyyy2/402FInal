@@ -63,7 +63,6 @@ const handleSaveNote = () => {
     }
     setTitle(""); 
     setContent("");
-    setImageUri(null); // Reset the image URI after saving
     setModalVisible(false);
 };
 
