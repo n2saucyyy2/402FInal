@@ -1,6 +1,7 @@
 // export default App;
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Modal, StyleSheet, Image } from "react-native";
+import { Video } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 
 const App = () => {
@@ -13,6 +14,7 @@ const App = () => {
     const [tags, setTags] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredNotes, setFilteredNotes] = useState([]);
+    const [videoUri, setVideoUri] = useState(null);
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -30,11 +32,27 @@ const App = () => {
         }
     };
 
+    const pickVideo = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        console.log('Video Picker Result:', result);
+
+        if (!result.cancelled && result.assets && result.assets.length > 0) {
+            setVideoUri(result.assets[0].uri);
+            console.log('Video URI set:', result.assets[0].uri);
+        }
+    };
+
     const handleSaveNote = () => {
         if (selectedNote) {
             const updatedNotes = notes.map((note) =>
                 note.id === selectedNote.id
-                    ? { ...note, title, content, imageUri, tags }
+                    ? { ...note, title, content, imageUri, videoUri, tags }
                     : note
             );
             setNotes(updatedNotes);
@@ -45,6 +63,7 @@ const App = () => {
                 title,
                 content,
                 imageUri,
+                videoUri,
                 tags,
             };
             setNotes([...notes, newNote]);
@@ -52,6 +71,7 @@ const App = () => {
         setTitle("");
         setContent("");
         setImageUri(null);
+        setVideoUri(null);
         setTags([]);
         setModalVisible(false);
     };
@@ -62,6 +82,7 @@ const App = () => {
         setContent(note.content);
         setModalVisible(true);
         setImageUri(note.imageUri);
+        setVideoUri(note.videoUri);
         setTags(note.tags);
     };
 
@@ -93,7 +114,18 @@ const App = () => {
                 {(searchQuery ? filteredNotes : notes).map((note) => (
                     <TouchableOpacity key={note.id} onPress={() => handleEditNote(note)}>
                         <Text style={styles.noteTitle}>{note.title}</Text>
-                        {note.imageUri && <Image source={{ uri: note.imageUri }} style={{ width: 100, height: 100 }} />}
+                        {note.imageUri && (
+                            <Image source={{ uri: note.imageUri }} style={{ width: 100, height: 100 }} />
+                        )}
+                        {note.videoUri && (
+                            <Video
+                                source={{ uri: note.videoUri }}
+                                style={{ width: 200, height: 200 }}
+                                useNativeControls={false}
+                                resizeMode="cover"
+                                isLooping
+                            />
+                        )}
                         {note.tags.length > 0 && <Text style={styles.tagsList}>Tags: {note.tags.join(', ')}</Text>}
                     </TouchableOpacity>
                 ))}
@@ -115,7 +147,7 @@ const App = () => {
                 animationType="slide"
                 transparent={false}
             >
-                <View style={styles.modalContainer}>
+                <ScrollView contentContainerStyle={styles.modalContainer}>
                     <TextInput
                         style={styles.input}
                         placeholder="Enter note title"
@@ -136,13 +168,27 @@ const App = () => {
                         value={tags.join(', ')}
                         onChangeText={(text) => setTags(text.split(',').map((tag) => tag.trim()))}
                     />
+                    <View style={styles.mediaButtonsContainer}>
+                        <Button title="Pick Video" onPress={pickVideo} />
+                        <Button title="Pick Image" onPress={pickImage} />
+                    </View>
+                    {videoUri && (
+                        <View>
+                            <Video
+                                source={{ uri: videoUri }}
+                                style={{ width: 200, height: 200 }}
+                                useNativeControls
+                                resizeMode="contain"
+                            />
+                            <Button title="Remove Video" onPress={() => setVideoUri(null)} />
+                        </View>
+                    )}
                     {imageUri && (
                         <View>
                             <Image source={{ uri: imageUri }} style={{ width: 100, height: 100 }} />
                             <Button title="Remove Image" onPress={() => setImageUri(null)} />
                         </View>
                     )}
-                    <Button title="Pick Image" onPress={pickImage} />
                     <View style={styles.buttonContainer}>
                         <Button
                             title="Save"
@@ -162,7 +208,7 @@ const App = () => {
                             />
                         )}
                     </View>
-                </View>
+                </ScrollView>
             </Modal>
         </View>
     );
@@ -257,7 +303,12 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
-    }, 
-}); 
+    },
+    mediaButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+});
 
 export default App;
