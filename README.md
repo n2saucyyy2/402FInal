@@ -28,11 +28,19 @@ The ability to apply this knowledge in a practical, hands-on manner was invaluab
 # How to use
 
 Add Workout - creates a new note
+
 Enter note title - takes the title of the new note
+
 Enter note content - takes the content of the note
+
 Enter tags - gives the ability to add tags to the notes to search
+
 pick image - saves a picture of an image to the notes
+
 pick video- saves a video to the note
+
 save - saves the note
+
 cancel - does not save the note
+
 Search by tag - searches all created notes tags and displays only notes with those tags
